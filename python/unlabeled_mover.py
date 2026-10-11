@@ -32,6 +32,7 @@ import logging
 import os
 import re
 import sys
+import time
 
 log = logging.getLogger("unlabeled_mover")
 
@@ -70,10 +71,23 @@ def parse_list(data) -> list[str]:
     return names
 
 
-def connect(host: str, port: int, user: str, password: str) -> imaplib.IMAP4:
-    M = imaplib.IMAP4(host, port)
-    M.login(user, password)
-    return M
+def connect(
+    host: str, port: int, user: str, password: str, attempts: int = 3, delay: float = 5.0
+) -> imaplib.IMAP4:
+    """Connect and log in, retrying briefly (the bridge may still be starting)."""
+    last: Exception | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            M = imaplib.IMAP4(host, port)
+            M.login(user, password)
+            return M
+        except (imaplib.IMAP4.error, OSError) as exc:
+            last = exc
+            if attempt < attempts:
+                log.warning("connect to %s:%s failed (%s); retry %d/%d in %ss", host, port, exc, attempt, attempts, delay)
+                time.sleep(delay)
+    assert last is not None
+    raise last
 
 
 def select(M: imaplib.IMAP4, mailbox: str) -> int:

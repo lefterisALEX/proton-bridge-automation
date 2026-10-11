@@ -19,7 +19,8 @@ services:
     container_name: protonmail-jobs
     restart: unless-stopped
     depends_on:
-      - protonmail-bridge
+      protonmail-bridge:
+        condition: service_healthy
     # .env provides the credentials and app config; `environment` overrides the
     # host-side endpoints with the bridge's in-network addresses (25/143 reach
     # the bridge's socat bridges to 1025/1143).
