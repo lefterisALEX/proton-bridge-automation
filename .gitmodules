@@ -1,0 +1,3 @@
+[submodule "sieve"]
+	path = sieve
+	url = https://github.com/lefterisALEX/proton-bridge-sieve.git
