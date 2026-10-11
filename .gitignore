@@ -7,3 +7,6 @@ __pycache__/
 
 # Logs
 *.log
+
+# Private Sieve filters live in their own repo (optional local checkout)
+sieve/

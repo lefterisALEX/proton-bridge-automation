@@ -11,9 +11,10 @@ left in place. Safely dry-runs by default.
 - `python/unlabeled_mover.py` — the mover (pure Python stdlib, no dependencies)
 - `python/labeled_mover.py` — moves labeled INBOX mail to `Archive` (except protected labels)
 - `python/erasmus_forwarder.py` — drains a Sieve-applied label queue, forwarding each message and removing the label
-- `sieve/` — **private submodule** ([`lefterisALEX/proton-bridge-sieve`](https://github.com/lefterisALEX/proton-bridge-sieve)):
-  your personal Sieve filters (`labels.sieve`, `expiration.sieve`,
-  `trash-newsletters.sieve`). Not part of this public repo; needs access to clone.
+- `sieve/` — **not in this repo**: your personal Sieve filters live in a separate
+  private repo, [`lefterisALEX/proton-bridge-sieve`](https://github.com/lefterisALEX/proton-bridge-sieve)
+  (`labels.sieve`, `expiration.sieve`, `trash-newsletters.sieve`). Clone it
+  separately (optionally into `sieve/`, which is git-ignored here).
 - `docker-compose.yml` — runs Proton Mail Bridge (`dancwilliams/protonmail-bridge`, multi-arch) + the hourly job container
 - `Dockerfile.jobs` — image for the periodic job (runs all three scripts hourly)
 - `scripts/run_hourly.sh` — the hourly sequence (labeled mover, unlabeled mover, forwarder)
@@ -24,9 +25,9 @@ left in place. Safely dry-runs by default.
 
 ## Keeping the sieve filters in sync
 
-Your filters live in `sieve/labels.sieve` and `sieve/expiration.sieve` (a private
-submodule — commit/push changes from inside `sieve/`). After
-editing them here, apply each in the web app (Settings -> Filters -> the filter
+Your filters live in the separate private repo `proton-bridge-sieve`
+(`labels.sieve`, `expiration.sieve`). After
+editing them there, apply each in the web app (Settings -> Filters -> the filter
 containing these rules -> replace the Sieve source -> Save) — there is no API
 to push filters to Proton. **Order matters**: filters run top-to-bottom in the
 web app and each matching rule stops. Keep the labels filter **above** the
@@ -57,11 +58,16 @@ Requirements:
 ### 1. Get the repo
 
 ```bash
-git clone --recurse-submodules https://github.com/lefterisALEX/proton-bridge-automation.git protonmail
+git clone https://github.com/lefterisALEX/proton-bridge-automation.git protonmail
 cd protonmail
+```
 
-# If you already cloned without the flag, fetch the private sieve submodule:
-# git submodule update --init
+The Sieve filters are kept in a **separate private repo** (see
+[Keeping the sieve filters in sync](#keeping-the-sieve-filters-in-sync)); clone
+it too if you want them alongside:
+
+```bash
+git clone https://github.com/lefterisALEX/proton-bridge-sieve.git sieve
 ```
 
 ### 2. One-time bridge login (interactive)
