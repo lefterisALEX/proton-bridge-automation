@@ -202,6 +202,24 @@ with a 64-bit OS (`uname -m` reports `aarch64`) it runs natively — just
 `protonmail-jobs` (`python:3.12-slim`) is multi-arch too, so the whole stack
 works on the Pi; total memory is ~18 MiB.
 
+## Troubleshooting
+
+- **First boot after `init`** logs a one-time auto-update step:
+  ```
+  Bridge is currently set to automatically install updates.
+  Are you sure you want to stop bridge from doing this? yes/no: EOF
+  ... cannot download ... context canceled
+  ```
+  This is normal — the image runs a short-lived `--cli` pass to persist
+  `AutoUpdate=false` (it ends on EOF by design, cancelling that session's
+  in-flight requests), then starts the real daemon.
+- **`no keychain` / `pass not initialized`** on a fresh volume means the volume
+  has not been initialised: run `./scripts/bridge-init.sh` (or migrate the
+  `protonmail` volume) as in [Set up on a new machine](#set-up-on-a-new-machine).
+- **`socat ... E connect ... 1143: Connection refused`** during startup is
+  transient until the bridge daemon binds the port. The `dbus-launch` keychain
+  warning is benign (the bridge uses the `pass` backend).
+
 ## Notes
 
 - Proton folder handlings: moving a message **to a folder** removes it from
