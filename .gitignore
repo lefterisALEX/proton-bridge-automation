@@ -1,0 +1,9 @@
+# Secrets / local config
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Logs
+*.log

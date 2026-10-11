@@ -1,0 +1,43 @@
+services:
+  protonmail-bridge:
+    # Multi-arch community image (amd64 + arm64/v8), maintained fork of shenxn's.
+    # https://github.com/dancwilliams/protonmail-bridge-docker
+    image: dancwilliams/protonmail-bridge:latest
+    container_name: protonmail-bridge
+    restart: unless-stopped
+    volumes:
+      - protonmail:/root
+    ports:
+      - "127.0.0.1:1025:25/tcp"
+      - "127.0.0.1:1143:143/tcp"
+
+  protonmail-jobs:
+    build:
+      context: .
+      dockerfile: Dockerfile.jobs
+    image: protonmail-jobs:local
+    container_name: protonmail-jobs
+    restart: unless-stopped
+    depends_on:
+      - protonmail-bridge
+    # .env provides the credentials and app config; `environment` overrides the
+    # host-side endpoints with the bridge's in-network addresses (25/143 reach
+    # the bridge's socat bridges to 1025/1143).
+    env_file:
+      - .env
+    environment:
+      PMB_IMAP_HOST: protonmail-bridge
+      PMB_IMAP_PORT: "143"
+      PMB_SMTP_HOST: protonmail-bridge
+      PMB_SMTP_PORT: "25"
+    # Bind-mount the repo so script edits take effect on the next run without a
+    # rebuild. Read-only; the env vars above still override .env's host names.
+    volumes:
+      - .:/app:ro
+
+volumes:
+  # Pin to the same volume used by scripts/bridge-init.sh (docker -v protonmail).
+  # Otherwise compose would prefix it (protonmail_protonmail) and point the
+  # daemon at an empty vault.
+  protonmail:
+    name: protonmail

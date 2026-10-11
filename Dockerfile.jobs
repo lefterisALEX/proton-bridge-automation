@@ -1,0 +1,12 @@
+# Periodic maintenance/forwarding job (see docker-compose.yml: protonmail-jobs).
+# docker-compose bind-mounts the repo over /app so script edits are live; the
+# COPY below only makes the image runnable standalone (without the mount).
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY python/ ./python/
+COPY scripts/run_hourly.sh scripts/job-loop.sh scripts/
+RUN chmod +x scripts/run_hourly.sh scripts/job-loop.sh
+
+ENTRYPOINT ["/bin/bash", "scripts/job-loop.sh"]
